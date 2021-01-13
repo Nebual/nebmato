@@ -1,19 +1,8 @@
-import React, { useCallback, useRef, useLayoutEffect } from 'react';
+import React, { useRef, useLayoutEffect } from 'react';
 
-import { useCleanup } from './hooks';
-
-export default function TimeCounter({ time, setTime, running, timeRef }) {
+export default function TimeCounter({ time, setTime, running, timerId }) {
 	const requestRef = useRef(0);
 	const previousTimeRef = useRef(0);
-
-	useCleanup(
-		useCallback(() => {
-			localStorage.setItem('time', timeRef.current);
-			localStorage.setItem('lastTime', Date.now());
-		}, []),
-	);
-
-	timeRef.current = time;
 
 	const animate = time => {
 		if (previousTimeRef.current) {
@@ -31,7 +20,7 @@ export default function TimeCounter({ time, setTime, running, timeRef }) {
 			requestRef.current = requestAnimationFrame(animate);
 		}
 		return () => cancelAnimationFrame(requestRef.current);
-	}, [running]);
+	}, [running, timerId]);
 
 	function calcHours(time) {
 		return (

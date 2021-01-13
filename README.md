@@ -13,3 +13,4 @@ low by 5:30pm, I'll pick it back up at 11pm when distractions are asleep.
 - Run `yarn && yarn start`
 - Or `yarn build` and open `dist/index.html` in your browser
 - https://nebmato.nebtown.info
+- https://nebmato.nebtown.info/?timer=3h28m&id=das-boot

@@ -2,6 +2,7 @@ import React from 'react';
 
 import { MdPauseCircleFilled, MdPlayCircleFilled } from 'react-icons/md';
 import { useOnKeyDown } from './hooks';
+import { FaGithub } from 'react-icons/fa';
 
 export default function IconButton({
 	onClick,
@@ -58,5 +59,20 @@ export function PlayPauseButton({ running, setRunning }) {
 			Icon={running ? MdPauseCircleFilled : MdPlayCircleFilled}
 			size={5}
 		/>
+	);
+}
+
+export function GithubButton() {
+	return (
+		<a
+			href="https://github.com/Nebual/nebmato"
+			target="_blank"
+			style={{
+				display: 'flex',
+				marginTop: 2,
+			}}
+		>
+			<FaGithub />
+		</a>
 	);
 }
