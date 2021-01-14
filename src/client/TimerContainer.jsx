@@ -1,52 +1,85 @@
-import React, { useCallback, useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import queryString from 'query-string';
 
-import { useCleanup, useUpdateUrl } from './hooks';
+import {
+	useCleanup,
+	useEffectAfterInit,
+	useRefFn,
+	useUpdateUrl,
+} from './hooks';
 import AddRemoveButtons from './AddRemoveButtons';
-import TimeCounter from './TimeCounter';
+import TimeDisplay from './TimeDisplay';
 import { PlayPauseButton } from './IconButton';
 
+function readIsRunning(timerId) {
+	return !!localStorage.getItem(`${timerId}:running`);
+}
+function readStoredDuration(timerId) {
+	return parseFloat(localStorage.getItem(`${timerId}:duration`)) || 0;
+}
+function readStoredLastTime(timerId) {
+	return parseInt(localStorage.getItem(`${timerId}:lastTime`)) || 0;
+}
+
 export default function TimerContainer({ timerId }) {
-	function readIsRunning() {
-		return !!localStorage.getItem(`${timerId}:running`);
+	const [running, setRunning] = useState(() => readIsRunning(timerId));
+	const durationRef = useRef(0);
+	const lastTimeRef = useRefFn(() => readStoredLastTime(timerId));
+	const [duration, setDuration] = useState(() => readStoredDuration(timerId));
+	durationRef.current = duration;
+
+	useUpdateUrl({
+		id: timerId !== 'timer' ? timerId : undefined,
+	});
+
+	const requestRef = useRef(0);
+	const updateDuration = () => {
+		if (lastTimeRef.current) {
+			const deltaTime = Date.now() - lastTimeRef.current;
+
+			setDuration(prevDuration => prevDuration + deltaTime * 0.001);
+			if (lastTimeRef.current) {
+				lastTimeRef.current += deltaTime;
+			}
+		}
+		requestRef.current = requestAnimationFrame(updateDuration);
+	};
+	useLayoutEffect(() => {
+		if (running) {
+			if (!lastTimeRef.current) {
+				lastTimeRef.current = Date.now();
+			}
+			requestRef.current = requestAnimationFrame(updateDuration);
+		} else {
+			lastTimeRef.current = 0;
+		}
+		return () => cancelAnimationFrame(requestRef.current);
+	}, [running, timerId]);
+
+	useEffectAfterInit(() => {
+		setDuration(readStoredDuration(timerId));
+		lastTimeRef.current = readStoredLastTime(timerId);
+		setRunning(readIsRunning(timerId));
+	}, [timerId]);
+	function save() {
+		localStorage.setItem(`${timerId}:running`, running ? 1 : '');
+		localStorage.setItem(`${timerId}:duration`, durationRef.current);
+		localStorage.setItem(`${timerId}:lastTime`, lastTimeRef.current);
 	}
-	const [running, setRunning] = useState(readIsRunning);
-	function readStoredTime() {
-		const lastTime =
-			parseInt(localStorage.getItem(`${timerId}:lastTime`)) || 0;
-		return (
-			(parseFloat(localStorage.getItem(`${timerId}:time`)) || 0) +
-			(lastTime && running && (Date.now() - lastTime) / 1000)
-		);
-	}
-	const timeRef = useRef(0);
-	const [time, setTime] = useState(readStoredTime);
-	timeRef.current = time;
+	useCleanup(save, [running, timerId]);
+	useEffectAfterInit(save, [running, timerId]);
 
 	useEffect(() => {
 		const $_GET = queryString.parse(location.search);
 		if ($_GET.timer) {
 			const seconds = parseTimeShorthand($_GET.timer);
 			if (seconds) {
-				setTime(-seconds);
+				setDuration(-seconds);
 				setRunning(true);
+				lastTimeRef.current = Date.now();
 			}
 		}
 	}, []);
-
-	useUpdateUrl({
-		id: timerId !== 'timer' ? timerId : undefined,
-	});
-
-	useCleanup(() => {
-		localStorage.setItem(`${timerId}:running`, running ? 1 : '');
-		localStorage.setItem(`${timerId}:time`, timeRef.current);
-		localStorage.setItem(`${timerId}:lastTime`, Date.now());
-	}, [running, timerId]);
-	useEffect(() => {
-		setTime(readStoredTime());
-		setRunning(readIsRunning());
-	}, [timerId]);
 
 	return (
 		<section className="section">
@@ -56,7 +89,7 @@ export default function TimerContainer({ timerId }) {
 						{timerId}
 					</a>
 				)}
-				<TimeCounter {...{ time, setTime, running, timerId }} />
+				<TimeDisplay duration={duration} />
 				<div
 					className="margin-auto"
 					style={{
@@ -65,7 +98,10 @@ export default function TimerContainer({ timerId }) {
 					}}
 				>
 					<PlayPauseButton {...{ running, setRunning }} />
-					<AddRemoveButtons setTime={setTime} />
+					<AddRemoveButtons
+						setDuration={setDuration}
+						setRunning={setRunning}
+					/>
 				</div>
 			</div>
 		</section>

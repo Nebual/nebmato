@@ -4,7 +4,7 @@ import { MdAdd, MdRefresh, MdRemove } from 'react-icons/md';
 
 import IconButton from './IconButton';
 
-function AddRemoveButtons({ setTime }) {
+function AddRemoveButtons({ setDuration, setRunning }) {
 	const [mode, setMode] = useState(0);
 	const sign = (
 		<span style={{ display: 'inline-block', width: '1.25rem' }}>
@@ -45,7 +45,7 @@ function AddRemoveButtons({ setTime }) {
 				<>
 					<IconButton
 						onClick={() => {
-							setTime(time => time + 60 * 60 * 7 * mode);
+							setDuration(time => time + 60 * 60 * 7 * mode);
 						}}
 						children={
 							<span style={{ fontSize: '2rem' }}>{sign}7h</span>
@@ -59,7 +59,7 @@ function AddRemoveButtons({ setTime }) {
 					/>
 					<IconButton
 						onClick={() => {
-							setTime(time => time + 60 * 60 * mode);
+							setDuration(time => time + 60 * 60 * mode);
 						}}
 						children={
 							<span style={{ fontSize: '2rem' }}>{sign}60</span>
@@ -73,7 +73,7 @@ function AddRemoveButtons({ setTime }) {
 					/>
 					<IconButton
 						onClick={() => {
-							setTime(time => time + 60 * 15 * mode);
+							setDuration(time => time + 60 * 15 * mode);
 						}}
 						children={
 							<span style={{ fontSize: '2rem' }}>{sign}15</span>
@@ -87,7 +87,7 @@ function AddRemoveButtons({ setTime }) {
 					/>
 					<IconButton
 						onClick={() => {
-							setTime(time => time + 60 * 5 * mode);
+							setDuration(time => time + 60 * 5 * mode);
 						}}
 						children={
 							<span style={{ fontSize: '2rem' }}>{sign}5</span>
@@ -101,7 +101,7 @@ function AddRemoveButtons({ setTime }) {
 					/>
 					<IconButton
 						onClick={() => {
-							setTime(time => time + 60 * mode);
+							setDuration(time => time + 60 * mode);
 						}}
 						children={
 							<span style={{ fontSize: '2rem' }}>{sign}1</span>
@@ -118,7 +118,8 @@ function AddRemoveButtons({ setTime }) {
 			{mode === -1 && (
 				<IconButton
 					onClick={() => {
-						setTime(0);
+						setDuration(0);
+						setRunning(false)
 					}}
 					Icon={MdRefresh}
 					size={3}

@@ -11,9 +11,9 @@ export function useUnload(fn) {
 	useEffect(() => {
 		const onUnload = (...args) => cb.current?.(...args);
 
-		window.addEventListener('beforeunload', onUnload);
+		window.addEventListener('pagehide', onUnload);
 
-		return () => window.removeEventListener('beforeunload', onUnload);
+		return () => window.removeEventListener('pagehide', onUnload);
 	}, []);
 }
 
