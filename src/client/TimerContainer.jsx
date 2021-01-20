@@ -11,6 +11,7 @@ import {
 import AddRemoveButtons from './AddRemoveButtons';
 import TimeDisplay from './TimeDisplay';
 import { PlayPauseButton } from './IconButton';
+import useAudioGen from './audio';
 
 function readIsRunning(timerId) {
 	return !!localStorage.getItem(`${timerId}:running`);
@@ -34,12 +35,29 @@ export default function TimerContainer({ timerId, showLogs }) {
 		id: timerId !== 'timer' ? timerId : undefined,
 	});
 
+	const { playFrequency, notes } = useAudioGen();
 	const requestRef = useRef(0);
 	const updateDuration = () => {
 		if (lastTimeRef.current) {
 			const deltaTime = Date.now() - lastTimeRef.current;
 
-			setDuration(prevDuration => prevDuration + deltaTime * 0.001);
+			setDuration(prevDuration => {
+				if (prevDuration < 0 && deltaTime / 1000 + prevDuration > 0) {
+					[
+						['F#4', 8],
+						['F#4', 8],
+						['E4', 8],
+						['G#4', 4],
+						['C#4', 8],
+					].map(([letter, size]) =>
+						playFrequency(
+							notes[letter],
+							1000 / (size / 4) / (128 / 60),
+						),
+					);
+				}
+				return prevDuration + deltaTime * 0.001;
+			});
 			if (lastTimeRef.current) {
 				lastTimeRef.current += deltaTime;
 			}
@@ -77,7 +95,7 @@ export default function TimerContainer({ timerId, showLogs }) {
 			const seconds = parseTimeShorthand($_GET.timer);
 			if (seconds) {
 				setDuration(-seconds);
-				setRunning(true);
+				setRunning(!$_GET.paused);
 				lastTimeRef.current = Date.now();
 			}
 		}
