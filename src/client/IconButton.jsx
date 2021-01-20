@@ -48,7 +48,17 @@ export default function IconButton({
 
 const KEYCODE_SPACE = 32;
 const KEYCODE_P = 80;
-export function PlayPauseButton({ running, setRunning }) {
+export function PlayPauseButton({
+	appendLogs,
+	running,
+	setRunning: setRunningState,
+}) {
+	const setRunning = innerFunc =>
+		setRunningState(old => {
+			const newState = innerFunc(old);
+			appendLogs(newState ? 'Running' : 'Paused');
+			return newState;
+		});
 	useOnKeyDown(() => setRunning(running => !running), KEYCODE_SPACE);
 	useOnKeyDown(() => setRunning(running => !running), KEYCODE_P);
 	return (

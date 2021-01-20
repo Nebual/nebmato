@@ -4,6 +4,7 @@ import queryString from 'query-string';
 import {
 	useCleanup,
 	useEffectAfterInit,
+	useLogs,
 	useRefFn,
 	useUpdateUrl,
 } from './hooks';
@@ -21,13 +22,14 @@ function readStoredLastTime(timerId) {
 	return parseInt(localStorage.getItem(`${timerId}:lastTime`)) || 0;
 }
 
-export default function TimerContainer({ timerId }) {
+export default function TimerContainer({ timerId, showLogs }) {
 	const [running, setRunning] = useState(() => readIsRunning(timerId));
 	const durationRef = useRef(0);
 	const lastTimeRef = useRefFn(() => readStoredLastTime(timerId));
 	const [duration, setDuration] = useState(() => readStoredDuration(timerId));
 	durationRef.current = duration;
 
+	const [logs, appendLogs] = useLogs(timerId);
 	useUpdateUrl({
 		id: timerId !== 'timer' ? timerId : undefined,
 	});
@@ -82,29 +84,41 @@ export default function TimerContainer({ timerId }) {
 	}, []);
 
 	return (
-		<section className="section">
-			<div className="container is-align-content-center margin-auto text-center">
-				{timerId !== 'timer' && (
-					<a href={`?id=${timerId}`} className="timer-link">
-						{timerId}
-					</a>
-				)}
-				<TimeDisplay duration={duration} />
-				<div
-					className="margin-auto"
-					style={{
-						width: '10rem',
-						position: 'relative',
-					}}
-				>
-					<PlayPauseButton {...{ running, setRunning }} />
-					<AddRemoveButtons
-						setDuration={setDuration}
-						setRunning={setRunning}
-					/>
+		<>
+			<section className="section" style={{ paddingBottom: '8rem' }}>
+				<div className="container is-align-content-center margin-auto text-center">
+					{timerId !== 'timer' && (
+						<a href={`?id=${timerId}`} className="timer-link">
+							{timerId}
+						</a>
+					)}
+					<TimeDisplay duration={duration} />
+					<div
+						className="margin-auto"
+						style={{
+							width: '10rem',
+							position: 'relative',
+						}}
+					>
+						<PlayPauseButton
+							{...{ appendLogs, running, setRunning }}
+						/>
+						<AddRemoveButtons
+							appendLogs={appendLogs}
+							setDuration={setDuration}
+							setRunning={setRunning}
+						/>
+					</div>
 				</div>
-			</div>
-		</section>
+			</section>
+			{showLogs && (
+				<section className="section">
+					{logs.slice(0, 10).map((logLine, i) => (
+						<p key={i}>{logLine}</p>
+					))}
+				</section>
+			)}
+		</>
 	);
 }
 

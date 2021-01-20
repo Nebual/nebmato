@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import queryString from 'query-string';
 
 export function useUnload(fn) {
@@ -108,4 +108,58 @@ export function useUpdateUrl(urlParameters) {
 			`${location.pathname}?${query}`,
 		);
 	}, [cachedParameters]);
+}
+
+export function useLocalStorage(key, defaultValue = undefined) {
+	const [, setChangeCount] = useState(0);
+
+	const incrementChangeCount = useCallback(() => {
+		setChangeCount(count => count + 1);
+	}, []);
+
+	defaultValue = useMemoObject(defaultValue);
+
+	const itemRef = useRef();
+	const serializedItem = localStorage.getItem(key);
+
+	itemRef.current = useMemo(
+		() =>
+			(serializedItem !== undefined
+				? JSON.parse(serializedItem)
+				: undefined) ?? defaultValue,
+		[defaultValue, serializedItem],
+	);
+
+	const setItem = useCallback(
+		(newValue = undefined) => {
+			if (newValue === undefined) {
+				localStorage.removeItem(key);
+			} else {
+				localStorage.setItem(
+					key,
+					JSON.stringify(
+						typeof newValue === 'function'
+							? newValue(itemRef.current)
+							: newValue,
+					),
+				);
+			}
+
+			incrementChangeCount();
+		},
+		[key, incrementChangeCount],
+	);
+
+	return [itemRef.current, setItem];
+}
+
+export function useLogs(timerId) {
+	const [logs, setLogs] = useLocalStorage(`${timerId}:logs`, []);
+	function appendLogs(newLine) {
+		setLogs(oldLogs => [
+			`${new Date().toLocaleTimeString()}: ${newLine}`,
+			...oldLogs,
+		]);
+	}
+	return [logs, appendLogs];
 }

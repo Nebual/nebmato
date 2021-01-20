@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import IconButton, { GithubButton } from './IconButton';
 import TimerContainer from './TimerContainer';
 import queryString from 'query-string';
-import { MdAlarmAdd } from 'react-icons/md';
+import { MdAlarmAdd, MdSubject } from 'react-icons/md';
+import { useLocalStorage } from './hooks';
 
 export default function AppContainer() {
 	const [timerId, setTimerId] = useState(
 		() => queryString.parse(location.search).id || 'timer',
 	);
+	const [showLogs, setShowLogs] = useLocalStorage('showLogs', false);
 	return (
 		<>
 			<nav className="navbar is-spaced">
@@ -17,6 +19,16 @@ export default function AppContainer() {
 					</div>
 					<div className="navbar-item">
 						<GithubButton />
+					</div>
+					<div className="navbar-item">
+						<IconButton
+							onClick={() => setShowLogs(old => !old)}
+							Icon={MdSubject}
+							size={1.5}
+							style={{
+								opacity: showLogs ? 1 : 0.25,
+							}}
+						/>
 					</div>
 				</div>
 				<div className="navbar-item" style={{ marginLeft: 'auto' }}>
@@ -35,7 +47,7 @@ export default function AppContainer() {
 					/>
 				</div>
 			</nav>
-			<TimerContainer timerId={timerId} />
+			<TimerContainer timerId={timerId} showLogs={showLogs} />
 		</>
 	);
 }

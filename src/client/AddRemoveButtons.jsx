@@ -4,13 +4,28 @@ import { MdAdd, MdRefresh, MdRemove } from 'react-icons/md';
 
 import IconButton from './IconButton';
 
-function AddRemoveButtons({ setDuration, setRunning }) {
+function AddRemoveButtons({ setDuration, setRunning, appendLogs }) {
 	const [mode, setMode] = useState(0);
 	const sign = (
 		<span style={{ display: 'inline-block', width: '1.25rem' }}>
 			{mode < 0 ? '-' : '+'}
 		</span>
 	);
+
+	const recentChangesRef = React.useRef({ tally: 0, timer: 0 });
+	function addTime(seconds) {
+		setDuration(time => time + seconds);
+		recentChangesRef.current.tally += seconds;
+		clearTimeout(recentChangesRef.current.timer);
+		recentChangesRef.current.timer = setTimeout(() => {
+			const tally = recentChangesRef.current.tally;
+			recentChangesRef.current.tally = 0;
+			if (tally) {
+				const verb = tally >= 0 ? 'Added' : 'Removed';
+				appendLogs(`${verb} ${Math.abs(tally / 60)} minutes`);
+			}
+		}, 2500);
+	}
 
 	return (
 		<>
@@ -45,7 +60,7 @@ function AddRemoveButtons({ setDuration, setRunning }) {
 				<>
 					<IconButton
 						onClick={() => {
-							setDuration(time => time + 60 * 60 * 7 * mode);
+							addTime(60 * 60 * 7 * mode);
 						}}
 						children={
 							<span style={{ fontSize: '2rem' }}>{sign}7h</span>
@@ -59,7 +74,7 @@ function AddRemoveButtons({ setDuration, setRunning }) {
 					/>
 					<IconButton
 						onClick={() => {
-							setDuration(time => time + 60 * 60 * mode);
+							addTime(60 * 60 * mode);
 						}}
 						children={
 							<span style={{ fontSize: '2rem' }}>{sign}60</span>
@@ -73,7 +88,7 @@ function AddRemoveButtons({ setDuration, setRunning }) {
 					/>
 					<IconButton
 						onClick={() => {
-							setDuration(time => time + 60 * 15 * mode);
+							addTime(60 * 15 * mode);
 						}}
 						children={
 							<span style={{ fontSize: '2rem' }}>{sign}15</span>
@@ -87,7 +102,7 @@ function AddRemoveButtons({ setDuration, setRunning }) {
 					/>
 					<IconButton
 						onClick={() => {
-							setDuration(time => time + 60 * 5 * mode);
+							addTime(60 * 5 * mode);
 						}}
 						children={
 							<span style={{ fontSize: '2rem' }}>{sign}5</span>
@@ -101,7 +116,7 @@ function AddRemoveButtons({ setDuration, setRunning }) {
 					/>
 					<IconButton
 						onClick={() => {
-							setDuration(time => time + 60 * mode);
+							addTime(60 * mode);
 						}}
 						children={
 							<span style={{ fontSize: '2rem' }}>{sign}1</span>
@@ -119,7 +134,7 @@ function AddRemoveButtons({ setDuration, setRunning }) {
 				<IconButton
 					onClick={() => {
 						setDuration(0);
-						setRunning(false)
+						setRunning(false);
 					}}
 					Icon={MdRefresh}
 					size={3}
