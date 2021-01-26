@@ -30,7 +30,7 @@ export default function TimerContainer({ timerId, showLogs }) {
 	const [duration, setDuration] = useState(() => readStoredDuration(timerId));
 	durationRef.current = duration;
 
-	const [logs, appendLogs] = useLogs(timerId);
+	const [logs, appendLogs] = useLogs(timerId, durationRef);
 	useUpdateUrl({
 		id: timerId !== 'timer' ? timerId : undefined,
 	});

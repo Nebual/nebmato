@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import queryString from 'query-string';
 
+import {formatTime} from "./TimeDisplay";
+
 export function useUnload(fn) {
 	const cb = useRef(fn);
 
@@ -153,11 +155,16 @@ export function useLocalStorage(key, defaultValue = undefined) {
 	return [itemRef.current, setItem];
 }
 
-export function useLogs(timerId) {
+function getNowHms() {
+	const date = new Date()
+	return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+}
+
+export function useLogs(timerId, durationRef) {
 	const [logs, setLogs] = useLocalStorage(`${timerId}:logs`, []);
 	function appendLogs(newLine) {
 		setLogs(oldLogs => [
-			`${new Date().toLocaleTimeString()}: ${newLine}`,
+			`${getNowHms()}: (${formatTime(durationRef.current, {fractional: false})}) ${newLine}`,
 			...oldLogs,
 		]);
 	}
