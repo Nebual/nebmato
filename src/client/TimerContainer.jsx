@@ -86,8 +86,8 @@ export default function TimerContainer({ timerId, showLogs }) {
 		localStorage.setItem(`${timerId}:duration`, durationRef.current);
 		localStorage.setItem(`${timerId}:lastTime`, lastTimeRef.current);
 	}
-	useCleanup(save, [running, timerId]);
-	useEffectAfterInit(save, [running, timerId]);
+	useCleanup(save, [running, timerId, duration]);
+	useEffectAfterInit(save, [running, timerId, duration]);
 
 	useEffect(() => {
 		const $_GET = queryString.parse(location.search);

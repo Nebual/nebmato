@@ -135,6 +135,7 @@ function AddRemoveButtons({ setDuration, setRunning, appendLogs }) {
 					onClick={() => {
 						setDuration(0);
 						setRunning(false);
+						appendLogs('Reset to 0');
 					}}
 					Icon={MdRefresh}
 					size={3}
